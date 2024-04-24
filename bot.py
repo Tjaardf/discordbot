@@ -16,7 +16,7 @@ MY_GUILD = discord.Object(id=1196941235508752556)
 #     password='',
 #     database='loodsbot'
 # )   
-
+# kaas
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
