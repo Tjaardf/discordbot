@@ -32,15 +32,13 @@ async def on_ready():
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Tjaard's yapping"))
 
 @client.event
-async def on_connect(self, interaction: discord.Interaction):
-    user_id = interaction.guild.owner_id
-    if self.permissions.administrator:
-        user = await client.fetch_user(user_id)
+async def on_guild_join(guild):
+    user_id = guild.owner_id
+    user = await client.fetch_user(user_id)
+    if guild.me.guild_permissions.administrator:
         await user.send(f"Hallo ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard")
     else:
-        user = await client.fetch_user(user_id)
-        await user.send(f"Ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard **Zou u nog even mij een rol kunnen geven met administrator permissies of mij dit apart kunnen geven?**")   
-
+        await user.send(f"Ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard **Zou u nog even mij een rol kunnen geven met administrator permissies of mij dit apart kunnen geven?**")
 @client.tree.command()
 @app_commands.describe(
     role='The role to set as the support role.'
