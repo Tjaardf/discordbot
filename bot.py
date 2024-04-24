@@ -157,5 +157,6 @@ async def uitbetalingaanvraag(interaction: discord.Interaction):
     user_id = 365216148909850625
     user = await client.fetch_user(user_id)
     await user.send(f"{interaction.user.name} heeft om een uitbetaling gevraagd")
+    await interaction.response.send_message("Uitbetaling aanvraag is verzonden!", ephemeral=True)
 
 client.run(config['token'])
