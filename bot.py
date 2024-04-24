@@ -33,14 +33,46 @@ async def on_ready():
     
 @client.tree.command()
 @app_commands.describe(
+    role='The role to set as the support role.'
+)
+async def set_support_role(
+interaction: discord.Interaction, role: discord.Role):
+    """Sets the support role."""
+    if interaction.user.guild_permissions.administrator:
+        # Save the role
+        config['support_role'] = role.id
+        with open('config.json', 'w') as f:
+            json.dump(config, f)
+        await interaction.response.send_message(f"The support role has been set to {role.mention}.", ephemeral=True)
+    else:
+        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+
+@client.tree.command()
+@app_commands.describe(
+    role='The role to set as the worker role.'
+)
+async def set_worker_role(
+interaction: discord.Interaction, role: discord.Role):
+    """Sets the worker role."""
+    if interaction.user.guild_permissions.administrator:
+        # Save the role
+        config['worker_role'] = role.id
+        with open('config.json', 'w') as f:
+            json.dump(config, f)
+        await interaction.response.send_message(f"The worker role has been set to {role.mention}.", ephemeral=True)
+    else:
+        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+
+@client.tree.command()
+@app_commands.describe(
     person='The person to hire.',
 )
 async def hire(interaction: discord.Interaction, person: discord.Member):
     """Hires a person for a role."""
-    if discord.role == "Loods Support":
+    if discord.role == "config['support_role']":
         # Get the role
-        Werknemer_role = discord.utils.get(interaction.guild.roles, name="Loods Werknemer")
-        if discord.Role == "Loods Werknemer" or discord.Role == "Loods Support":
+        Werknemer_role = discord.utils.get(interaction.guild.roles, name=config['worker_role'])
+        if discord.Role == config['worker_role'] or discord.Role == config['support_role']:
             await interaction.response.send_message(f"{person.mention} is already a {Werknemer_role.name}.",ephemeral=True)
             return
         elif Werknemer_role is not None:
@@ -48,7 +80,7 @@ async def hire(interaction: discord.Interaction, person: discord.Member):
             await person.add_roles(Werknemer_role)
             await interaction.response.send_message(f"{person.mention} has been hired as {Werknemer_role.name}.",ephemeral=True)
         else:
-            await interaction.response.send_message("The 'Loods Werknemer' role does not exist.", ephemeral=True)
+            await interaction.response.send_message("The 'config['worker_role']' role does not exist.", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
@@ -60,17 +92,17 @@ async def fire(interaction: discord.Interaction, person: discord.Member):
     """Fires a person from a role."""
     if interaction.user.guild_permissions.administrator:
         # Get the role
-        Werknemer_role = discord.utils.get(interaction.guild.roles, name="Loods Werknemer")
-        if discord.Role != "Loods Werknemer" or discord.Role != "Loods Support":
+        Werknemer_role = discord.utils.get(interaction.guild.roles, name=config['worker_role'])
+        if discord.Role != config['worker_role'] or discord.Role != config['support_role']:
             await interaction.response.send_message(f"{person.mention} is not a {Werknemer_role.name}.",ephemeral=True)
             return
         elif Werknemer_role is not None:
             # Remove the role from the person
-            await person.remove_roles("Loods Support")
+            await person.remove_roles(config['support_role'])
             await person.remove_roles(Werknemer_role)
             await interaction.response.send_message(f"{person.mention} has been fired from {Werknemer_role.name}.",ephemeral=True)
         else:
-            await interaction.response.send_message("The 'Loods Werknemer' role does not exist.", ephemeral=True)
+            await interaction.response.send_message("The 'config['worker_role']' role does not exist.", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
@@ -82,21 +114,21 @@ async def promote(interaction: discord.Interaction, person: discord.Member):
     """Promotes a person to a higher role."""
     if interaction.user.guild_permissions.administrator:
         # Get the role
-        Manager_role = discord.utils.get(interaction.guild.roles, name="Loods Support")
+        Manager_role = discord.utils.get(interaction.guild.roles, name=config['support_role'])
         
-        if discord.Role == "Loods Support":
+        if discord.Role == config['support_role']:
             await interaction.response.send_message(f"{person.mention} is already a {Manager_role.name}.",ephemeral=True)
             return
-        elif discord.Role != "Loods Werknemer":
+        elif discord.Role != config['worker_role']:
             await interaction.response.send_message(f"{person.mention} is not hired yet.",ephemeral=True)
             return
         elif Manager_role is not None:
             # Add the role to the person
-            await person.remove_roles("Loods Werknemer")
+            await person.remove_roles(config['worker_role'])
             await person.add_roles(Manager_role)
             await interaction.response.send_message(f"{person.mention} has been promoted to {Manager_role.name}.",ephemeral=True)
         else:
-            await interaction.response.send_message("The 'Loods Support' role does not exist.", ephemeral=True)
+            await interaction.response.send_message("The 'config['support_role']' role does not exist.", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
