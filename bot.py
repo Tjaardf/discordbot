@@ -32,7 +32,7 @@ async def on_ready():
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Tjaard's yapping"))
 
 @client.event
-async def on_join(self, interaction: discord.Interaction):
+async def on_connect(self, interaction: discord.Interaction):
     user_id = interaction.guild.owner_id
     if self.permissions.administrator:
         user = await client.fetch_user(user_id)
