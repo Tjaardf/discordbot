@@ -123,7 +123,7 @@ async def on_member_join(member):
 @app_commands.describe(
     number='The number of messages to delete.'
 )
-async def purge(interaction: discord.Interaction, number: int):
+async def purge(interaction: discord.Interaction, number: str):
     """Deletes a number of messages from the channel."""
     if interaction.user.guild_permissions.manage_messages:
         # Delete the messages
