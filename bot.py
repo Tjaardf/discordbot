@@ -142,14 +142,6 @@ async def say(interaction: discord.Interaction, message: str):
     await interaction.channel.send(message)
     await interaction.response.send_message("Message sent!", ephemeral=True)
 
-@client.tree.command()
-async def status(interaction: discord.Interaction):
-    """Shows the status of the bot."""
-    embed   = discord.Embed(
-        title="Bot Status",
-        description="The bot is online and ready to use.",
-        color=discord.Color.green()
-    )
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 client.run(config['token'])
