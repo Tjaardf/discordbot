@@ -127,8 +127,13 @@ async def purge(interaction: discord.Interaction, number: int):
     """Deletes a number of messages from the channel."""
     if interaction.user.guild_permissions.manage_messages:
         # Delete the messages
-        await interaction.channel.purge(limit=number)
-        await interaction.response.send_message(f"{number} messages have been deleted.", ephemeral=True)
+        if number == "all":
+            await interaction.channel.purge()
+            await interaction.response.send_message("All messages have been deleted.", ephemeral=True)
+            return 
+        else:
+            await interaction.channel.purge(limit=number)
+            await interaction.response.send_message(f"{number} messages have been deleted.", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
