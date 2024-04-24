@@ -151,4 +151,11 @@ async def status(interaction: discord.Interaction):
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
+@client.tree.command()
+async def uitbetalingaanvraag(interaction: discord.Interaction):
+    """Makes a uitbetaling request"""
+    user_id = 365216148909850625
+    user = await client.fetch_user(user_id)
+    await user.send(f"{interaction.user.name} heeft om een uitbetaling gevraagd")
+
 client.run(config['token'])
