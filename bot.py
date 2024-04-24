@@ -34,8 +34,10 @@ client = MyClient(intents=intents)
 
 @client.event
 async def on_ready():
-    print(f'Logged in as {client.user} (ID: {client.user.id})')
     print('------')
+    print(f"Tjaards bot genaamd: {client.user} (ID: {client.user.id})")
+    print('------')
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Tjaard's Yapping"))
     
 @client.tree.command()
 @app_commands.describe(
