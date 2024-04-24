@@ -133,6 +133,23 @@ async def purge(interaction: discord.Interaction, number: int):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
+@client.tree.command()
+@app_commands.describe(
+    message="The message to send"
+)
+async def say(interaction: discord.Interaction, message: str):
+    """Sends a message to the channel."""
+    await interaction.channel.send(message)
+    await interaction.response.send_message("Message sent!", ephemeral=True)
 
+@client.tree.command()
+async def status(interaction: discord.Interaction):
+    """Shows the status of the bot."""
+    embed   = discord.Embed(
+        title="Bot Status",
+        description="The bot is online and ready to use.",
+        color=discord.Color.green()
+    )
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 client.run(config['token'])
