@@ -9,14 +9,6 @@ with open('config.json') as f:
 
 MY_GUILD = discord.Object(id=1196941235508752556)  
 
-# db = mysql.connector.connect(
-
-#     host='localhost',
-#     user='root',
-#     password='',
-#     database='loodsbot'
-# )   
-
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
         super().__init__(intents=intents)
@@ -37,7 +29,7 @@ async def on_ready():
     print('------')
     print(f"Tjaards bot genaamd: {client.user} (ID: {client.user.id})")
     print('------')
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Tjaard's Yapping"))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Tjaard's yapping"))
     
 @client.tree.command()
 @app_commands.describe(
@@ -45,7 +37,7 @@ async def on_ready():
 )
 async def hire(interaction: discord.Interaction, person: discord.Member):
     """Hires a person for a role."""
-    if interaction.user.guild_permissions.administrator:
+    if discord.role == "Loods Support":
         # Get the role
         Werknemer_role = discord.utils.get(interaction.guild.roles, name="Loods Werknemer")
         if discord.Role == "Loods Werknemer" or discord.Role == "Loods Support":
