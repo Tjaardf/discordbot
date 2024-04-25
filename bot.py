@@ -153,9 +153,9 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
                 # Role already set, ask for reset
                 msg = await interaction.response.send_message("The support role has already been set. Do you want to reset it?", components=[
                     [
-                        Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
+                        Button(ButtonStyle.success, label="Yes", custom_id="reset_yes"),
 
-                        Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
+                        Button(ButtonStyle.danger, label="No", custom_id="reset_no")
                     ]
                 ], ephemeral=True)
 
@@ -203,8 +203,8 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
                 msg = await interaction.response.send_message(
                     "The worker role has already been set. Do you want to reset it?", components=[
                         [
-                            Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
-                            Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
+                            Button(ButtonStyle.success, label="Yes", custom_id="reset_yes"),
+                            Button(ButtonStyle.danger, label="No", custom_id="reset_no")
                         ]
                     ], ephemeral=True)
 
