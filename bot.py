@@ -5,20 +5,23 @@ import asyncio
 from discord import app_commands
 import json
 import mysql.connector
+
 with open('config.json') as f:
     config = json.load(f)
 
 
 def create_db_connection():
     connection = mysql.connector.connect(
-        host="na02-sql.pebblehost.com",  
-        user="customer_711448_loodsbot",  
-        password="2Nl$x8jbr#Wfen1-QG@g",  
-        database="customer_711448_loodsbot"  
+        host="na02-sql.pebblehost.com",
+        user="customer_711448_loodsbot",
+        password="2Nl$x8jbr#Wfen1-QG@g",
+        database="customer_711448_loodsbot"
     )
     return connection
 
+
 db_connection = create_db_connection()
+
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -33,6 +36,7 @@ class MyClient(discord.Client):
             self.tree.copy_global_to(guild=guild)
             await self.tree.sync(guild=guild)
 
+
 intents = discord.Intents.default()
 client = MyClient(intents=intents)
 
@@ -44,6 +48,7 @@ async def on_ready():
     print('------')
     await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Tjaard's yapping"))
 
+
 @client.event
 async def on_guild_join(guild):
     user_id = guild.owner_id
@@ -51,9 +56,12 @@ async def on_guild_join(guild):
     cursor = db_connection.cursor(dictionary=True)
     cursor.execute("INSERT INTO guild_roles (guild_id) VALUES (%s)", (guild.id,))
     if guild.me.guild_permissions.administrator:
-        await user.send(f"Hallo ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard")
+        await user.send(
+            f"Hallo ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard")
     else:
-        await user.send(f"Ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard **Zou u nog even mij een rol kunnen geven met administrator permissies of mij dit apart kunnen geven?**")
+        await user.send(
+            f"Ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard **Zou u nog even mij een rol kunnen geven met administrator permissies of mij dit apart kunnen geven?**")
+
 
 @client.tree.command()
 async def help(interaction: discord.Interaction):
@@ -69,7 +77,8 @@ async def help(interaction: discord.Interaction):
             value=command.description,
             inline=False
         )
-    await interaction.response.send_message(embed=embed, ephemeral=True)    
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 @client.tree.command()
 @app_commands.describe(
@@ -177,6 +186,7 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
+
 @client.tree.command()
 @app_commands.describe(
     role='The role to set as the worker role.'
@@ -238,23 +248,35 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
 )
 async def hire(interaction: discord.Interaction, person: discord.Member):
     """Hires a person for a role."""
+    guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
-        if config['support_role'] is None:
-            await interaction.response.send_message("The support role has not been set.", ephemeral=True)
-            return
-        else:
-            Werknemer_role = discord.utils.get(interaction.guild.roles, name=config['worker_role'])
-            if Werknemer_role in person.roles:
-                await interaction.response.send_message(f"{person.mention} is already a {Werknemer_role.name}.",ephemeral=True)
+        try:
+            cursor = db_connection.cursor(dictionary=True)
+            cursor.execute("SELECT worker_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
+
+            if config['support_role'] is None:
+                await interaction.response.send_message("The support role has not been set.", ephemeral=True)
                 return
-            elif Werknemer_role is not None:
-                # Add the role to the person
-                await person.add_roles(Werknemer_role)
-                await interaction.response.send_message(f"{person.mention} has been hired as {Werknemer_role.name}.",ephemeral=True)
             else:
-                await interaction.response.send_message("The worker role has not been set yet. Do it by saying /setworkerrole", ephemeral=True)
+                Werknemer_role = discord.utils.get(interaction.guild.roles, name=config['worker_role'])
+                if Werknemer_role in person.roles:
+                    await interaction.response.send_message(f"{person.mention} is already a {Werknemer_role.name}.",ephemeral=True)
+                    return
+                elif Werknemer_role is not None:
+                    # Add the role to the person
+                    await person.add_roles(Werknemer_role)
+                    await interaction.response.send_message(f"{person.mention} has been hired as {Werknemer_role.name}.",ephemeral=True)
+                else:
+                    await interaction.response.send_message("The worker role has not been set yet. Do it by saying /setworkerrole", ephemeral=True)
+
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+            await interaction.response.send_message("An error occurred while hiring the person.", ephemeral=True)
+        finally:
+            cursor.close()    
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+
 
 @client.tree.command()
 @app_commands.describe(
@@ -278,10 +300,11 @@ async def fire(interaction: discord.Interaction, person: discord.Member):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
+
 @client.tree.command()
 @app_commands.describe(
     person='The person to promote.'
-)	
+)
 async def promote(interaction: discord.Interaction, person: discord.Member):
     """Promotes a person to a higher role."""
     if interaction.user.guild_permissions.administrator:
@@ -308,6 +331,7 @@ async def promote(interaction: discord.Interaction, person: discord.Member):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
+
 @client.event
 async def on_member_join(interaction: discord.Interaction, member):
     """Gives a role to a member when they join."""
@@ -319,7 +343,6 @@ async def on_member_join(interaction: discord.Interaction, member):
     else:
         # Add the role to the member
         await member.add_roles(config['autorole'])
-
 
 
 @client.tree.command()
@@ -340,6 +363,7 @@ async def purge(interaction: discord.Interaction, number: str):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
+
 @client.tree.command()
 @app_commands.describe(
     message="The message to send"
@@ -349,15 +373,17 @@ async def say(interaction: discord.Interaction, message: str):
     await interaction.channel.send(message)
     await interaction.response.send_message("Message sent!", ephemeral=True)
 
+
 @client.tree.command()
 async def status(interaction: discord.Interaction):
     """Shows the status of the bot."""
-    embed   = discord.Embed(
+    embed = discord.Embed(
         title="Bot Status",
         description="The bot is online and ready to use.",
         color=discord.Color.green()
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 @client.tree.command()
 async def uitbetalingaanvraag(interaction: discord.Interaction):
@@ -366,5 +392,6 @@ async def uitbetalingaanvraag(interaction: discord.Interaction):
     user = await client.fetch_user(user_id)
     await user.send(f"{interaction.user.mention} heeft om een uitbetaling gevraagd")
     await interaction.response.send_message("Uitbetaling aanvraag is verzonden!", ephemeral=True)
+
 
 client.run(config['token'])
