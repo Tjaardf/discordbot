@@ -83,13 +83,16 @@ async def help(self):
 )
 async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
     """Sets the autorole."""
+    guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
         # Save the role
-        if config['autorole'] is not None:
+        if config.get('autorole', {}).get(guild_id) is not None:
             await interaction.response.send_message("The autorole has already been set.", ephemeral=True)
             return
         else:
-            config['autorole'] = autorole.id
+            if 'autorole' not in config:
+                config['autorole'] = {}
+            config['autorole'][guild_id] = autorole.id
             with open('config.json', 'w') as f:
                 json.dump(config, f)
             await interaction.response.send_message(f"The autorole has been set to {autorole.mention}.", ephemeral=True)
@@ -102,9 +105,10 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
 )
 async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
     """Sets the worker role."""
+    guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
         # Save the role
-        if config['worker_role'] is not None:
+        if config.get('worker_role', {}).get(guild_id) is not None:
             msg = await interaction.response.send_message("The worker role has already been set. Do you want to reset it?", components=[
                 [
                     Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
@@ -122,25 +126,22 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
                 return
 
             if button_interaction.data.custom_id == "reset_yes":
-                config['worker_role'] = None
+                config['worker_role'][guild_id] = None
                 with open('config.json', 'w') as f:
                     json.dump(config, f)
                 await button_interaction.response.send_message("The worker role has been reset.", ephemeral=True)
             elif button_interaction.data.custom_id == "reset_no":
                 await button_interaction.response.send_message("The worker role has not been reset.", ephemeral=True)
-            else:
-                config['worker_role'] = role.id
-                with open('config.json', 'w') as f:
-                    json.dump(config, f)
-                await interaction.response.send_message(f"The worker role has been set to {role.mention}.", ephemeral=True)
         else:
-            config['worker_role'] = role.id
+            if 'worker_role' not in config:
+                config['worker_role'] = {}
+            config['worker_role'][guild_id] = role.id
             with open('config.json', 'w') as f:
                 json.dump(config, f)
             await interaction.response.send_message(f"The worker role has been set to {role.mention}.", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
-
+        
 @client.tree.command()
 @app_commands.describe(
     person='The person to hire.',
