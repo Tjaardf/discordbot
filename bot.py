@@ -85,6 +85,7 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
         # Initialize config['support_role'] if not already initialized
         if 'support_role' not in config:
             config['support_role'] = {}
+            await interaction.response.send_message("Try again later.", ephemeral=True)
 
         guild_id = str(interaction.guild.id)
         
@@ -128,6 +129,8 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
         # Initialize config['worker_role'] if not already initialized
         if 'worker_role' not in config:
             config['worker_role'] = {}
+            await interaction.response.send_message("Try again later.", ephemeral=True)
+
 
         guild_id = str(interaction.guild.id)
         
