@@ -175,9 +175,9 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
 
 @client.tree.command()
 @app_commands.describe(
-    worker_role='The role to set as the worker role.'
+    role='The role to set as the worker role.'
 )
-async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
+async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
     """Sets or resets the worker role."""
     guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
