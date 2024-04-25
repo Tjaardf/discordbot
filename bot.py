@@ -121,9 +121,7 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
-@client.tree.command(
-        role="The role to set the worker role as."
-)
+@client.tree.command()
 async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
     """Sets the worker role."""
     guild_id = str(interaction.guild.id)
