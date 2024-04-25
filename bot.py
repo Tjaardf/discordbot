@@ -39,13 +39,11 @@ async def on_guild_join(guild):
         await user.send(f"Hallo ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard")
     else:
         await user.send(f"Ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard **Zou u nog even mij een rol kunnen geven met administrator permissies of mij dit apart kunnen geven?**")
+
 @client.tree.command()
-@app_commands.describe(
-    role='The role to set as the support role.'
-)
 async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
     """Sets the support role."""
-    guild_id = str(interaction.guild.id)
+    guild_id = str(interaction.guild.id)  # Convert guild ID to string
     if interaction.user.guild_permissions.administrator:
         # Save the role
         if config.get('support_role', {}).get(guild_id) is not None:
@@ -81,6 +79,7 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
             await interaction.response.send_message(f"The support role has been set to {role.mention}.", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+
 
 
 @client.tree.command()
