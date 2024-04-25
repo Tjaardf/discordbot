@@ -98,7 +98,7 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
                 msg = await interaction.response.send_message(
                     "The autorole has already been set. Do you want to reset it?", components=[
                         [
-                            Button(button_style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
+                            Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
 
                             Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
                         ]
@@ -153,7 +153,7 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
                 # Role already set, ask for reset
                 msg = await interaction.response.send_message("The support role has already been set. Do you want to reset it?", components=[
                     [
-                        Button(button_style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
+                        Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
 
                         Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
                     ]
@@ -203,7 +203,7 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
                 msg = await interaction.response.send_message(
                     "The worker role has already been set. Do you want to reset it?", components=[
                         [
-                            Button(button_style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
+                            Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
                             Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
                         ]
                     ], ephemeral=True)
