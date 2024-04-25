@@ -49,6 +49,8 @@ async def on_ready():
 async def on_guild_join(guild):
     user_id = guild.owner_id
     user = await client.fetch_user(user_id)
+    cursor = db_connection.cursor(dictionary=True)
+    cursor.execute("INSERT INTO guild_roles (guild_id) VALUES (%s)", (guild.id,))
     if guild.me.guild_permissions.administrator:
         await user.send(f"Hallo ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard")
     else:
@@ -80,7 +82,7 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
     if interaction.user.guild_permissions.administrator:
         try:
             cursor = db_connection.cursor(dictionary=True)
-            cursor.execute("SELECT autorole_id FROM roles WHERE guild_id = %s", (guild_id,))
+            cursor.execute("SELECT auto_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
             result = cursor.fetchone()
 
             if result:
@@ -103,14 +105,14 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
 
                 if button_interaction.data.custom_id == "reset_yes":
                     # Reset the role
-                    cursor.execute("UPDATE roles SET autorole_id = NULL WHERE guild_id = %s", (guild_id,))
+                    cursor.execute("UPDATE guild_roles SET auto_role = NULL WHERE guild_id = %s", (guild_id,))
                     db_connection.commit()
                     await button_interaction.response.send_message("The autorole has been reset.", ephemeral=True)
                 elif button_interaction.data.custom_id == "reset_no":
                     await button_interaction.response.send_message("The autorole has not been reset.", ephemeral=True)
             else:
                 # Role not set, set it
-                cursor.execute("INSERT INTO roles (guild_id, autorole_id) VALUES (%s, %s)", (guild_id, autorole.id))
+                cursor.execute("INSERT INTO guild_roles (guild_id, auto_role) VALUES (%s, %s)", (guild_id, autorole.id))
                 db_connection.commit()
                 await interaction.response.send_message(f"The autorole has been set to {autorole.mention}.", ephemeral=True)
         except mysql.connector.Error as err:
@@ -131,7 +133,7 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
     if interaction.user.guild_permissions.administrator:
         try:
             cursor = db_connection.cursor(dictionary=True)
-            cursor.execute("SELECT support_role_id FROM roles WHERE guild_id = %s", (guild_id,))
+            cursor.execute("SELECT support_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
             result = cursor.fetchone()
 
             if result:
@@ -154,14 +156,14 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
 
                 if button_interaction.data.custom_id == "reset_yes":
                     # Reset the role
-                    cursor.execute("UPDATE roles SET support_role_id = NULL WHERE guild_id = %s", (guild_id,))
+                    cursor.execute("UPDATE guild_roles SET support_role = NULL WHERE guild_id = %s", (guild_id,))
                     db_connection.commit()
                     await button_interaction.response.send_message("The support role has been reset.", ephemeral=True)
                 elif button_interaction.data.custom_id == "reset_no":
                     await button_interaction.response.send_message("The support role has not been reset.", ephemeral=True)
             else:
                 # Role not set, set it
-                cursor.execute("INSERT INTO roles (guild_id, support_role_id) VALUES (%s, %s)", (guild_id, role.id))
+                cursor.execute("INSERT INTO guild_roles (guild_id, support_role) VALUES (%s, %s)", (guild_id, role.id))
                 db_connection.commit()
                 await interaction.response.send_message(f"The support role has been set to {role.mention}.", ephemeral=True)
         except mysql.connector.Error as err:
@@ -182,7 +184,7 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
     if interaction.user.guild_permissions.administrator:
         try:
             cursor = db_connection.cursor(dictionary=True)
-            cursor.execute("SELECT worker_role_id FROM roles WHERE guild_id = %s", (guild_id,))
+            cursor.execute("SELECT worker_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
             result = cursor.fetchone()
 
             if result:
@@ -205,14 +207,14 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
 
                 if button_interaction.data.custom_id == "reset_yes":
                     # Reset the role
-                    cursor.execute("UPDATE roles SET worker_role_id = NULL WHERE guild_id = %s", (guild_id,))
+                    cursor.execute("UPDATE guild_roles SET worker_role = NULL WHERE guild_id = %s", (guild_id,))
                     db_connection.commit()
                     await button_interaction.response.send_message("The worker role has been reset.", ephemeral=True)
                 elif button_interaction.data.custom_id == "reset_no":
                     await button_interaction.response.send_message("The worker role has not been reset.", ephemeral=True)
             else:
                 # Role not set, set it
-                cursor.execute("INSERT INTO roles (guild_id, worker_role_id) VALUES (%s, %s)", (guild_id, role.id))
+                cursor.execute("INSERT INTO guild_roles (guild_id, worker_role) VALUES (%s, %s)", (guild_id, role.id))
                 db_connection.commit()
                 await interaction.response.send_message(f"The worker role has been set to {role.mention}.", ephemeral=True)
         except mysql.connector.Error as err:
