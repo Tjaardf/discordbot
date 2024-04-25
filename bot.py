@@ -1,6 +1,7 @@
 from typing import Optional, List
-from discord import Embed, ui, ButtonStyle
+from discord import Embed, ui, ButtonStyle, Button, Interaction
 import discord
+import asyncio
 from discord import app_commands
 import json
 with open('config.json') as f:
@@ -104,8 +105,34 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
     if interaction.user.guild_permissions.administrator:
         # Save the role
         if config['worker_role'] is not None:
-            await interaction.response.send_message("The worker role has already been set.", ephemeral=True)
-            return
+            msg = await interaction.response.send_message("The worker role has already been set. Do you want to reset it?", components=[
+                [
+                    Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
+                    Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
+                ]
+            ], ephemeral=True)
+
+            def check(interaction: Interaction):
+                return interaction.message.id == msg.id and interaction.user.id == interaction.user.id
+
+            try:
+                button_interaction = await client.wait_for("interaction", check=check, timeout=60)
+            except asyncio.TimeoutError:
+                await msg.edit(components=[])
+                return
+
+            if button_interaction.data.custom_id == "reset_yes":
+                config['worker_role'] = None
+                with open('config.json', 'w') as f:
+                    json.dump(config, f)
+                await button_interaction.response.send_message("The worker role has been reset.", ephemeral=True)
+            elif button_interaction.data.custom_id == "reset_no":
+                await button_interaction.response.send_message("The worker role has not been reset.", ephemeral=True)
+            else:
+                config['worker_role'] = role.id
+                with open('config.json', 'w') as f:
+                    json.dump(config, f)
+                await interaction.response.send_message(f"The worker role has been set to {role.mention}.", ephemeral=True)
         else:
             config['worker_role'] = role.id
             with open('config.json', 'w') as f:
@@ -134,7 +161,7 @@ async def hire(interaction: discord.Interaction, person: discord.Member):
                 await person.add_roles(Werknemer_role)
                 await interaction.response.send_message(f"{person.mention} has been hired as {Werknemer_role.name}.",ephemeral=True)
             else:
-                await interaction.response.send_message("The 'config['worker_role']' role does not exist.", ephemeral=True)
+                await interaction.response.send_message("The support role has not been set yet. Do it by saying /setsupportrole", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
