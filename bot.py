@@ -128,7 +128,7 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
                                                         ephemeral=True)
         except mysql.connector.Error as err:
             print(f"Error: {err}")
-            await interaction.response.send_message("An error occurred while setting the autorole.", ephemeral=True)
+            await interaction.response.send_message("An error occurred while setting the autorole. Contact the developer!", ephemeral=True)
         finally:
             cursor.close()
     else:
@@ -180,17 +180,13 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
                 await interaction.response.send_message(f"The support role has been set to {role.mention}.", ephemeral=True)
         except mysql.connector.Error as err:
             print(f"Error: {err}")
-            await interaction.response.send_message("An error occurred while setting the support role.", ephemeral=True)
+            await interaction.response.send_message("An error occurred while setting the support role. Contact the developer!", ephemeral=True)
         finally:
             cursor.close()
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.tree.command()
-@app_commands.describe(
-    role='The role to set as the worker role.'
-)
 async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
     """Sets or resets the worker role."""
     guild_id = str(interaction.guild.id)
@@ -237,7 +233,8 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
             print(f"Error: {err}")
             await interaction.response.send_message("An error occurred while setting the worker role.", ephemeral=True)
         finally:
-            cursor.close()
+            if cursor:
+                cursor.close()  # Close cursor only if it exists
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
@@ -253,19 +250,20 @@ async def hire(interaction: discord.Interaction, person: discord.Member):
         try:
             cursor = db_connection.cursor(dictionary=True)
             cursor.execute("SELECT worker_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
+            result = cursor.fetchone()
 
-            if config['support_role'] is None:
-                await interaction.response.send_message("The support role has not been set.", ephemeral=True)
+            if config['worker_role'] is None:
+                await interaction.response.send_message("The worker role has not been set.", ephemeral=True)
                 return
             else:
-                Werknemer_role = discord.utils.get(interaction.guild.roles, name=config['worker_role'])
-                if Werknemer_role in person.roles:
-                    await interaction.response.send_message(f"{person.mention} is already a {Werknemer_role.name}.",ephemeral=True)
+                Worker_role = discord.utils.get(interaction.guild.roles, name=config['worker_role'])
+                if Worker_role in person.roles:
+                    await interaction.response.send_message(f"{person.mention} is already a {Worker_role.name}.", ephemeral=True)
                     return
-                elif Werknemer_role is not None:
+                elif Worker_role is not None:
                     # Add the role to the person
-                    await person.add_roles(Werknemer_role)
-                    await interaction.response.send_message(f"{person.mention} has been hired as {Werknemer_role.name}.",ephemeral=True)
+                    await person.add_roles(Worker_role)
+                    await interaction.response.send_message(f"{person.mention} has been hired as {Worker_role.name}.", ephemeral=True)
                 else:
                     await interaction.response.send_message("The worker role has not been set yet. Do it by saying /setworkerrole", ephemeral=True)
 
@@ -285,18 +283,34 @@ async def hire(interaction: discord.Interaction, person: discord.Member):
 async def fire(interaction: discord.Interaction, person: discord.Member):
     """Fires a person from a role."""
     if interaction.user.guild_permissions.administrator:
-        # Get the role
-        Werknemer_role = discord.utils.get(interaction.guild.roles, name=config['worker_role'])
-        if discord.Role != config['worker_role'] or discord.Role != config['support_role']:
-            await interaction.response.send_message(f"{person.mention} is not a {Werknemer_role.name}.",ephemeral=True)
-            return
-        elif Werknemer_role is not None:
-            # Remove the role from the person
-            await person.remove_roles(config['support_role'])
-            await person.remove_roles(Werknemer_role)
-            await interaction.response.send_message(f"{person.mention} has been fired from {Werknemer_role.name}.",ephemeral=True)
-        else:
-            await interaction.response.send_message("This person has not been hired.", ephemeral=True)
+        try:
+            guild_id = str(interaction.guild.id)
+            cursor = db_connection.cursor(dictionary=True)
+            cursor.execute("SELECT worker_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
+            result = cursor.fetchone()
+
+            if result:
+                # Role exists, proceed with firing
+                worker_role_id = result['worker_role']
+                worker_role = interaction.guild.get_role(worker_role_id)
+
+                if worker_role is None:
+                    await interaction.response.send_message("The worker role has not been properly set.", ephemeral=True)
+                    return
+
+                if worker_role not in person.roles:
+                    await interaction.response.send_message(f"{person.mention} is not a {worker_role.name}.", ephemeral=True)
+                    return
+
+                await person.remove_roles(worker_role)
+                await interaction.response.send_message(f"{person.mention} has been fired from {worker_role.name}.", ephemeral=True)
+            else:
+                await interaction.response.send_message("This person has not been hired.", ephemeral=True)
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+            await interaction.response.send_message("An error occurred while firing the person.", ephemeral=True)
+        finally:
+            cursor.close()
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
@@ -308,41 +322,65 @@ async def fire(interaction: discord.Interaction, person: discord.Member):
 async def promote(interaction: discord.Interaction, person: discord.Member):
     """Promotes a person to a higher role."""
     if interaction.user.guild_permissions.administrator:
-        # Get the role
-        Manager_role = discord.utils.get(interaction.guild.roles, name=config['support_role'])
+        try:
+            guild_id = str(interaction.guild.id)
+            cursor = db_connection.cursor(dictionary=True)
+            cursor.execute("SELECT support_role, worker_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
+            result = cursor.fetchone()
 
-        if config['support_role'] is None:
-            await interaction.response.send_message("The support role has not been set.", ephemeral=True)
-            return
-        elif config['worker_role'] is None:
-            await interaction.response.send_message("The worker role has not been set.", ephemeral=True)
-            return
-        elif discord.Role == config['support_role']:
-            await interaction.response.send_message(f"{person.mention} is already a {Manager_role.name}.",ephemeral=True)
-            return
-        elif discord.Role != config['worker_role']:
-            await interaction.response.send_message(f"{person.mention} is not hired yet.",ephemeral=True)
-            return
-        else:
-            # Add the role to the person
-            await person.remove_roles(config['worker_role'])
-            await person.add_roles(Manager_role)
-            await interaction.response.send_message(f"{person.mention} has been promoted to {Manager_role.name}.",ephemeral=True)
+            if not result:
+                await interaction.response.send_message("The roles have not been properly set.", ephemeral=True)
+                return
+
+            support_role_id = result['support_role']
+            worker_role_id = result['worker_role']
+
+            support_role = interaction.guild.get_role(support_role_id)
+            worker_role = interaction.guild.get_role(worker_role_id)
+
+            if support_role is None or worker_role is None:
+                await interaction.response.send_message("The roles have not been properly set.", ephemeral=True)
+                return
+
+            if support_role not in person.roles or worker_role in person.roles:
+                await interaction.response.send_message(f"{person.mention} is not eligible for promotion.", ephemeral=True)
+                return
+
+            await person.remove_roles(worker_role)
+            await person.add_roles(support_role)
+            await interaction.response.send_message(f"{person.mention} has been promoted to {support_role.name}.", ephemeral=True)
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+            await interaction.response.send_message("An error occurred while promoting the person.", ephemeral=True)
+        finally:
+            cursor.close()
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
 @client.event
-async def on_member_join(interaction: discord.Interaction, member):
+async def on_member_join(member):
     """Gives a role to a member when they join."""
-    # Get the role
-    Burger_role = discord.utils.get(member.guild.roles, name=config['autorole'])
-    if config['autorole'] is None:
-        await interaction.respone.send_message("The autorole has not been set.", ephemeral=True)
-        return
-    else:
-        # Add the role to the member
-        await member.add_roles(config['autorole'])
+    try:
+        guild_id = str(member.guild.id)
+        cursor = db_connection.cursor(dictionary=True)
+        cursor.execute("SELECT autorole FROM guild_roles WHERE guild_id = %s", (guild_id,))
+        result = cursor.fetchone()
+
+        if not result:
+            return
+
+        autorole_id = result['autorole']
+        autorole = member.guild.get_role(autorole_id)
+
+        if autorole is None:
+            return
+
+        await member.add_roles(autorole)
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+    finally:
+        cursor.close()
 
 
 @client.tree.command()
