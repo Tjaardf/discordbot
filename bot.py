@@ -173,58 +173,6 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
-@client.tree.command()
-@app_commands.describe(
-    role='The role to set as the worker role.'
-)
-async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
-    """Sets or resets the worker role."""
-    guild_id = str(interaction.guild.id)
-    if interaction.user.guild_permissions.administrator:
-        try:
-            cursor = db_connection.cursor(dictionary=True)
-            cursor.execute("SELECT worker_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
-            result = cursor.fetchone()
-
-            if result:
-                # Role already set, ask for reset
-                msg = await interaction.response.send_message("The worker role has already been set. Do you want to reset it?", components=[
-                    [
-                        Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
-                        Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
-                    ]
-                ], ephemeral=True)
-
-                def check(button_interaction: Interaction):
-                    return button_interaction.message.id == msg.id and button_interaction.user.id == interaction.user.id
-
-                try:
-                    button_interaction = await client.wait_for("interaction", check=check, timeout=60)
-                except asyncio.TimeoutError:
-                    await msg.edit(components=[])
-                    return
-
-                if button_interaction.data.custom_id == "reset_yes":
-                    # Reset the role
-                    cursor.execute("UPDATE guild_roles SET worker_role = NULL WHERE guild_id = %s", (guild_id,))
-                    db_connection.commit()
-                    await button_interaction.response.send_message("The worker role has been reset.", ephemeral=True)
-                elif button_interaction.data.custom_id == "reset_no":
-                    await button_interaction.response.send_message("The worker role has not been reset.", ephemeral=True)
-            else:
-                # Role not set, set it
-                cursor.execute("INSERT INTO guild_roles (guild_id, worker_role) VALUES (%s, %s)", (guild_id, role.id))
-                db_connection.commit()
-                await interaction.response.send_message(f"The worker role has been set to {role.mention}.", ephemeral=True)
-        except mysql.connector.Error as err:
-            print(f"Error: {err}")
-            await interaction.response.send_message("An error occurred while setting the worker role.", ephemeral=True)
-        finally:
-            cursor.close()
-    else:
-        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
-
-
 
 @client.tree.command()
 @app_commands.describe(
