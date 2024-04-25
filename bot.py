@@ -203,8 +203,8 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
                 msg = await interaction.response.send_message(
                     "The worker role has already been set. Do you want to reset it?", components=[
                         [
-                            Button(ButtonStyle.success, custom_id="reset_yes"), "Yes",
-                            Button(ButtonStyle.danger, custom_id="reset_no"), "No",
+                            Button(ButtonStyle.success, id="reset_yes"), "Yes",
+                            Button(ButtonStyle.danger,  id="reset_no"), "No",
                         ]
                     ], ephemeral=True)
 
