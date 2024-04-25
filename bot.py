@@ -8,8 +8,6 @@ with open('config.json') as f:
     config = json.load(f)
 
 
-MY_GUILD = discord.Object(id=discord.Guild.ID)  
-
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
         super().__init__(intents=intents)
@@ -19,8 +17,9 @@ class MyClient(discord.Client):
         self.loop.create_task(self.setup_hook())
 
     async def setup_hook(self):
-        self.tree.copy_global_to(guild=MY_GUILD)
-        await self.tree.sync(guild=MY_GUILD)
+        for guild in self.guilds:
+            self.tree.copy_global_to(guild=guild)
+            await self.tree.sync(guild=guild)
 
 intents = discord.Intents.default()
 client = MyClient(intents=intents)
@@ -141,7 +140,7 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
             await interaction.response.send_message(f"The worker role has been set to {role.mention}.", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
-        
+
 @client.tree.command()
 @app_commands.describe(
     person='The person to hire.',
