@@ -7,7 +7,7 @@ with open('config.json') as f:
     config = json.load(f)
 
 
-MY_GUILD = discord.Object(id=1196941235508752556)  
+MY_GUILD = discord.Object(id=discord.Guild.ID)  
 
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
