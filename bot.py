@@ -124,7 +124,7 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
 
 @client.tree.command()
 @app_commands.describe(
-    support_role='The role to set as the support role.'
+    role='The role to set as the support role.'
 )
 async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
     """Sets or resets the support role."""
