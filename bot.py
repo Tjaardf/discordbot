@@ -98,9 +98,9 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
                 msg = await interaction.response.send_message(
                     "The autorole has already been set. Do you want to reset it?", components=[
                         [
-                            Button(ButtonStyle.success, custom_id="reset_yes"), "Yes",
+                            Button(ButtonStyle.success, id="reset_yes"), "Yes",
 
-                            Button(ButtonStyle.danger, custom_id="reset_no"), "No"
+                            Button(ButtonStyle.danger, id="reset_no"), "No"
                         ]
                     ], ephemeral=True)
 
@@ -113,12 +113,12 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
                     await msg.edit(components=[])
                     return
 
-                if button_interaction.data.custom_id == "reset_yes":
+                if button_interaction.data.id == "reset_yes":
                     # Reset the role
                     cursor.execute("UPDATE guild_roles SET auto_role = NULL WHERE guild_id = %s", (guild_id,))
                     db_connection.commit()
                     await button_interaction.response.send_message("The autorole has been reset.", ephemeral=True)
-                elif button_interaction.data.custom_id == "reset_no":
+                elif button_interaction.data.id == "reset_no":
                     await button_interaction.response.send_message("The autorole has not been reset.", ephemeral=True)
             else:
                 # Role not set, set it
@@ -153,9 +153,9 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
                 # Role already set, ask for reset
                 msg = await interaction.response.send_message("The support role has already been set. Do you want to reset it?", components=[
                     [
-                        Button(ButtonStyle.success, custom_id="reset_yes"), "Yes",
+                        Button(ButtonStyle.success, id="reset_yes"), "Yes",
 
-                        Button(ButtonStyle.danger, custom_id="reset_no"), "No"                                             
+                        Button(ButtonStyle.danger, id="reset_no"), "No"                                             
                      ]
                 ], ephemeral=True)
 
@@ -168,12 +168,12 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
                     await msg.edit(components=[])
                     return
 
-                if button_interaction.data.custom_id == "reset_yes":
+                if button_interaction.data.id == "reset_yes":
                     # Reset the role
                     cursor.execute("UPDATE guild_roles SET support_role = NULL WHERE guild_id = %s", (guild_id,))
                     db_connection.commit()
                     await button_interaction.response.send_message("The support role has been reset.", ephemeral=True)
-                elif button_interaction.data.custom_id == "reset_no":
+                elif button_interaction.data.id == "reset_no":
                     await button_interaction.response.send_message("The support role has not been reset.", ephemeral=True)
             else:
                 # Role not set, set it
@@ -217,12 +217,12 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
                     await msg.edit(components=[])
                     return
 
-                if button_interaction.data.custom_id == "reset_yes":
+                if button_interaction.data.id == "reset_yes":
                     # Reset the role
                     cursor.execute("UPDATE guild_roles SET worker_role = NULL WHERE guild_id = %s", (guild_id,))
                     db_connection.commit()
                     await button_interaction.response.send_message("The worker role has been reset.", ephemeral=True)
-                elif button_interaction.data.custom_id == "reset_no":
+                elif button_interaction.data.id == "reset_no":
                     await button_interaction.response.send_message("The worker role has not been reset.", ephemeral=True)
             else:
                 # Role not set, set it
