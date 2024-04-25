@@ -41,48 +41,6 @@ async def on_guild_join(guild):
         await user.send(f"Ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard **Zou u nog even mij een rol kunnen geven met administrator permissies of mij dit apart kunnen geven?**")
 
 @client.tree.command()
-async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
-    """Sets the support role."""
-    guild_id = str(interaction.guild.id)  # Convert guild ID to string
-    if interaction.user.guild_permissions.administrator:
-        # Save the role
-        if config.get('support_role', {}).get(guild_id) is not None:
-            msg = await interaction.response.send_message("The support role has already been set. Do you want to reset it?", components=[
-                [
-                    Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
-                    Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
-                ]
-            ], ephemeral=True)
-
-            def check(button_interaction: Interaction):
-                return button_interaction.message.id == msg.id and button_interaction.user.id == interaction.user.id
-
-            try:
-                button_interaction = await client.wait_for("interaction", check=check, timeout=60)
-            except asyncio.TimeoutError:
-                await msg.edit(components=[])
-                return
-
-            if button_interaction.data.custom_id == "reset_yes":
-                config['support_role'][guild_id] = None
-                with open('config.json', 'w') as f:
-                    json.dump(config, f)
-                await button_interaction.response.send_message("The support role has been reset.", ephemeral=True)
-            elif button_interaction.data.custom_id == "reset_no":
-                await button_interaction.response.send_message("The support role has not been reset.", ephemeral=True)
-        else:
-            if 'support_role' not in config:
-                config['support_role'] = {}
-            config['support_role'][guild_id] = role.id
-            with open('config.json', 'w') as f:
-                json.dump(config, f)
-            await interaction.response.send_message(f"The support role has been set to {role.mention}.", ephemeral=True)
-    else:
-        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
-
-
-
-@client.tree.command()
 async def help(interaction: discord.Interaction):
     """Shows the help command."""
     embed = discord.Embed(
@@ -121,12 +79,60 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 @client.tree.command()
+async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
+    """Sets the support role."""
+    if interaction.user.guild_permissions.administrator:
+        # Initialize config['support_role'] if not already initialized
+        if 'support_role' not in config:
+            config['support_role'] = {}
+
+        guild_id = str(interaction.guild.id)
+        
+        # Save the role
+        if config['support_role'].get(guild_id) is not None:
+            msg = await interaction.response.send_message("The support role has already been set. Do you want to reset it?", components=[
+                [
+                    Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
+                    Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
+                ]
+            ], ephemeral=True)
+
+            def check(button_interaction: Interaction):
+                return button_interaction.message.id == msg.id and button_interaction.user.id == interaction.user.id
+
+            try:
+                button_interaction = await client.wait_for("interaction", check=check, timeout=60)
+            except asyncio.TimeoutError:
+                await msg.edit(components=[])
+                return
+
+            if button_interaction.data.custom_id == "reset_yes":
+                config['support_role'][guild_id] = None
+                with open('config.json', 'w') as f:
+                    json.dump(config, f)
+                await button_interaction.response.send_message("The support role has been reset.", ephemeral=True)
+            elif button_interaction.data.custom_id == "reset_no":
+                await button_interaction.response.send_message("The support role has not been reset.", ephemeral=True)
+        else:
+            config['support_role'][guild_id] = role.id
+            with open('config.json', 'w') as f:
+                json.dump(config, f)
+            await interaction.response.send_message(f"The support role has been set to {role.mention}.", ephemeral=True)
+    else:
+        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+
+@client.tree.command()
 async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
     """Sets the worker role."""
-    guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
+        # Initialize config['worker_role'] if not already initialized
+        if 'worker_role' not in config:
+            config['worker_role'] = {}
+
+        guild_id = str(interaction.guild.id)
+        
         # Save the role
-        if config.get('worker_role', {}).get(guild_id) is not None:
+        if config['worker_role'].get(guild_id) is not None:
             msg = await interaction.response.send_message("The worker role has already been set. Do you want to reset it?", components=[
                 [
                     Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
@@ -151,8 +157,6 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
             elif button_interaction.data.custom_id == "reset_no":
                 await button_interaction.response.send_message("The worker role has not been reset.", ephemeral=True)
         else:
-            if 'worker_role' not in config:
-                config['worker_role'] = {}
             config['worker_role'][guild_id] = role.id
             with open('config.json', 'w') as f:
                 json.dump(config, f)
