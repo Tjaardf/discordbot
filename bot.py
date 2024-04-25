@@ -8,7 +8,6 @@ import mysql.connector
 with open('config.json') as f:
     config = json.load(f)
 
-import mysql.connector
 
 def create_db_connection():
     connection = mysql.connector.connect(
