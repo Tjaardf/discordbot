@@ -43,38 +43,61 @@ async def on_guild_join(guild):
 @app_commands.describe(
     role='The role to set as the support role.'
 )
-async def setsupportrole(
-interaction: discord.Interaction, role: discord.Role):
+async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
     """Sets the support role."""
+    guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
         # Save the role
-        if config['support_role'] is not None:
-            await interaction.response.send_message("The support role has already been set.", ephemeral=True)
-            return
+        if config.get('support_role', {}).get(guild_id) is not None:
+            msg = await interaction.response.send_message("The support role has already been set. Do you want to reset it?", components=[
+                [
+                    Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
+                    Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
+                ]
+            ], ephemeral=True)
+
+            def check(button_interaction: Interaction):
+                return button_interaction.message.id == msg.id and button_interaction.user.id == interaction.user.id
+
+            try:
+                button_interaction = await client.wait_for("interaction", check=check, timeout=60)
+            except asyncio.TimeoutError:
+                await msg.edit(components=[])
+                return
+
+            if button_interaction.data.custom_id == "reset_yes":
+                config['support_role'][guild_id] = None
+                with open('config.json', 'w') as f:
+                    json.dump(config, f)
+                await button_interaction.response.send_message("The support role has been reset.", ephemeral=True)
+            elif button_interaction.data.custom_id == "reset_no":
+                await button_interaction.response.send_message("The support role has not been reset.", ephemeral=True)
         else:
-            config['support_role'] = role.id
+            if 'support_role' not in config:
+                config['support_role'] = {}
+            config['support_role'][guild_id] = role.id
             with open('config.json', 'w') as f:
                 json.dump(config, f)
             await interaction.response.send_message(f"The support role has been set to {role.mention}.", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
+
 @client.tree.command()
-async def help(self):
+async def help(interaction: discord.Interaction):
     """Shows the help command."""
     embed = discord.Embed(
         title="Help",
         description="This is a list of all the commands.",
         color=discord.Color.blue()
     )
-    for command in self.tree.commands:
+    for command in client.tree.commands:
         embed.add_field(
             name=command.name,
             value=command.description,
             inline=False
         )
-    await self.send(embed=embed)
-    
+    await interaction.response.send_message(embed=embed, ephemeral=True)    
 
 @client.tree.command()
 @app_commands.describe(
@@ -98,9 +121,8 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
-@client.tree.command()
-@app_commands.describe(
-    role='The role to set as the worker role.'
+@client.tree.command(
+        role="The role to set the worker role as."
 )
 async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
     """Sets the worker role."""
@@ -115,8 +137,8 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
                 ]
             ], ephemeral=True)
 
-            def check(interaction: Interaction):
-                return interaction.message.id == msg.id and interaction.user.id == interaction.user.id
+            def check(button_interaction: Interaction):
+                return button_interaction.message.id == msg.id and button_interaction.user.id == interaction.user.id
 
             try:
                 button_interaction = await client.wait_for("interaction", check=check, timeout=60)
@@ -141,6 +163,7 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
+
 @client.tree.command()
 @app_commands.describe(
     person='The person to hire.',
@@ -161,7 +184,7 @@ async def hire(interaction: discord.Interaction, person: discord.Member):
                 await person.add_roles(Werknemer_role)
                 await interaction.response.send_message(f"{person.mention} has been hired as {Werknemer_role.name}.",ephemeral=True)
             else:
-                await interaction.response.send_message("The support role has not been set yet. Do it by saying /setsupportrole", ephemeral=True)
+                await interaction.response.send_message("The worker role has not been set yet. Do it by saying /setworkerrole", ephemeral=True)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
