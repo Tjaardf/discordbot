@@ -98,9 +98,9 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
                 msg = await interaction.response.send_message(
                     "The autorole has already been set. Do you want to reset it?", components=[
                         [
-                            Button(style=ButtonStyle.success, label="Yes", custom_id="reset_yes"),
+                            Button(ButtonStyle.success, label="Yes", custom_id="reset_yes"),
 
-                            Button(style=ButtonStyle.danger, label="No", custom_id="reset_no")
+                            Button(ButtonStyle.danger, label="No", custom_id="reset_no")
                         ]
                     ], ephemeral=True)
 
