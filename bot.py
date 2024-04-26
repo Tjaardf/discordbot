@@ -32,18 +32,17 @@ class Tree:
         pass  # Implement this method
 
 
-class MyClient(nextcord.Client):
+class MyClient(commands.Bot):
     def __init__(self, *, intents: nextcord.Intents):
-        super().__init__(intents=intents)
+        super().__init__(command_prefix='/', intents=intents)
         self.tree = Tree()  # Initialize 'tree' with an instance of 'Tree'
 
     async def on_ready(self):
-        self.loop.create_task(self.setup_hook())
+        print('------')
+        print(f"Tjaards bot genaamd: {self.user} (ID: {self.user.id})")
+        print('------')
+        await self.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="Tjaard's yapping"))
 
-    async def setup_hook(self):
-        for guild in self.guilds:
-            self.tree.copy_global_to(guild=guild)
-            await self.tree.sync(guild=guild)
 
 
 class ConfirmView(View):
