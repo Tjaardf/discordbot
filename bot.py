@@ -24,7 +24,6 @@ def create_db_connection():
 db_connection = create_db_connection()
 
 
-
 class Tree:
     def copy_global_to(self, guild):
         pass  # Implement this method
