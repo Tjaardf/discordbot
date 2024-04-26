@@ -3,6 +3,7 @@ from nextcord import Embed, ui, ButtonStyle, Button, Interaction
 import asyncio
 from nextcord import app_commands
 import json
+from nextcord.ext import commands
 import mysql.connector
 import nextcord
 from nextcord.ui import Button, View
@@ -97,7 +98,7 @@ async def help(interaction: nextcord.Interaction):
 
 
 @client.tree.command()
-@app_commands.describe(
+@nextcord.ext.commands.describe(    
     autorole='The role to set as the autorole.'
 )
 async def setautorole(interaction: nextcord.Interaction, autorole: nextcord.Role):
@@ -149,7 +150,7 @@ async def setautorole(interaction: nextcord.Interaction, autorole: nextcord.Role
 
 
 @client.tree.command()
-@app_commands.describe(
+@nextcord.ext.commands.describe(    
     role='The role to set as the support role.'
 )
 async def setsupportrole(interaction: nextcord.Interaction, role: nextcord.Role):
@@ -197,7 +198,7 @@ async def setsupportrole(interaction: nextcord.Interaction, role: nextcord.Role)
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 @client.tree.command()
-@app_commands.describe(
+@nextcord.ext.commands.describe(    
     role='The role to set as the worker role.'
 )
 async def setworkerrole(interaction: nextcord.Interaction, role: nextcord.Role):
@@ -249,7 +250,7 @@ async def setworkerrole(interaction: nextcord.Interaction, role: nextcord.Role):
 
 
 @client.tree.command()
-@app_commands.describe(
+@nextcord.ext.commands.describe(   
     person='The person to hire.',
 )
 async def hire(interaction: nextcord.Interaction, person: nextcord.Member):
@@ -286,7 +287,7 @@ async def hire(interaction: nextcord.Interaction, person: nextcord.Member):
 
 
 @client.tree.command()
-@app_commands.describe(
+@nextcord.ext.commands.describe(    
     person='The person to fire.'
 )
 async def fire(interaction: nextcord.Interaction, person: nextcord.Member):
@@ -325,7 +326,7 @@ async def fire(interaction: nextcord.Interaction, person: nextcord.Member):
 
 
 @client.tree.command()
-@app_commands.describe(
+@nextcord.ext.commands.describe(    
     person='The person to promote.'
 )
 async def promote(interaction: nextcord.Interaction, person: nextcord.Member):
@@ -393,8 +394,7 @@ async def on_member_join(member):
 
 
 @client.tree.command()
-@app_commands.describe(
-    number='The number of messages to delete.'
+@nextcord.ext.commands.describe(    number='The number of messages to delete.'
 )
 async def purge(interaction: nextcord.Interaction, number: str):
     """Deletes a number of messages from the channel."""
@@ -412,8 +412,7 @@ async def purge(interaction: nextcord.Interaction, number: str):
 
 
 @client.tree.command()
-@app_commands.describe(
-    message="The message to send"
+@nextcord.ext.commands.describe(    message="The message to send"
 )
 async def say(interaction: nextcord.Interaction, message: str):
     """Sends a message to the channel."""
