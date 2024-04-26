@@ -27,6 +27,8 @@ db_connection = create_db_connection()
 class MyClient(nextcord.Client):
     def __init__(self, *, intents: nextcord.Intents):
         super().__init__(intents=intents)
+        self.tree = None  # Define the 'tree' attribute here
+
 
     async def on_ready(self):
         self.loop.create_task(self.setup_hook())
