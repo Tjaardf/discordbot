@@ -24,11 +24,18 @@ def create_db_connection():
 db_connection = create_db_connection()
 
 
+
+class Tree:
+    def copy_global_to(self, guild):
+        pass  # Implement this method
+
+    def sync(self, guild):
+        pass  # Implement this method
+
 class MyClient(nextcord.Client):
     def __init__(self, *, intents: nextcord.Intents):
         super().__init__(intents=intents)
-        self.tree = None  # Define the 'tree' attribute here
-
+        self.tree = Tree()  # Initialize 'tree' with an instance of 'Tree'
 
     async def on_ready(self):
         self.loop.create_task(self.setup_hook())
