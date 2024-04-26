@@ -1,7 +1,6 @@
 from typing import Optional, List
-from nextcord import Embed, ui, ButtonStyle, Button, Interaction
+from nextcord import Embed, ui, ButtonStyle, Interaction
 import asyncio
-from nextcord import app_commands
 import json
 from nextcord.ext import commands
 import mysql.connector
@@ -28,7 +27,6 @@ db_connection = create_db_connection()
 class MyClient(nextcord.Client):
     def __init__(self, *, intents: nextcord.Intents):
         super().__init__(intents=intents)
-        self.tree = app_commands.CommandTree(self)
 
     async def on_ready(self):
         self.loop.create_task(self.setup_hook())
