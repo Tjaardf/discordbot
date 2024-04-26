@@ -32,7 +32,7 @@ class Tree:
         pass  # Implement this method
 
 
-class Mybot(nextcord.bot):
+class Mybot(commands.bot):
     def __init__(self, *, intents: nextcord.Intents):
         super().__init__(intents=intents)
         self.tree = Tree()  # Initialize 'tree' with an instance of 'Tree'
