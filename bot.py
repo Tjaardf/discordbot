@@ -188,7 +188,7 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
-
+# jo
 async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
     """Sets or resets the worker role."""
     guild_id = str(interaction.guild.id)
