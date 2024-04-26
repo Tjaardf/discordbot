@@ -98,9 +98,9 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
                 msg = await interaction.response.send_message(
                     "The autorole has already been set. Do you want to reset it?", components=[
                         [
-                            Button(ButtonStyle.success, id="reset_yes"), "Yes",
+                            Button(ButtonStyle.success, label="Yes", custom_id="reset_yes"),
+                            Button(ButtonStyle.danger, label="No", custom_id="reset_no")
 
-                            Button(ButtonStyle.danger, id="reset_no"), "No"
                         ]
                     ], ephemeral=True)
 
@@ -188,7 +188,6 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
-# jo
 @client.tree.command()
 @app_commands.describe(
     role='The role to set as the worker role.'
