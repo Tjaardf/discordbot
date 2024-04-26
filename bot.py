@@ -5,6 +5,8 @@ import asyncio
 from discord import app_commands
 import json
 import mysql.connector
+import nextcord
+from nextcord.ui import Button, View
 
 with open('config.json') as f:
     config = json.load(f)
@@ -35,6 +37,21 @@ class MyClient(discord.Client):
         for guild in self.guilds:
             self.tree.copy_global_to(guild=guild)
             await self.tree.sync(guild=guild)
+
+class ConfirmView(View):
+    def __init__(self):
+        super().__init__()
+        self.value = None
+
+    @nextcord.ui.button(label='Yes', style=nextcord.ButtonStyle.green)
+    async def confirm(self, button: Button, interaction: Interaction):
+        self.value = True
+        self.stop()
+
+    @nextcord.ui.button(label='No', style=nextcord.ButtonStyle.red)
+    async def cancel(self, button: Button, interaction: Interaction):
+        self.value = False
+        self.stop()
 
 
 intents = discord.Intents.default()
@@ -94,31 +111,26 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
             result = cursor.fetchone()
 
             if result:
-                # Role already set, ask for reset
-                msg = await interaction.response.send_message(
-                    "The autorole has already been set. Do you want to reset it?", components=[
-                        [
-                            Button(ButtonStyle.success, label="Yes", custom_id="reset_yes"),
-                            Button(ButtonStyle.danger, label="No", custom_id="reset_no")
-
-                        ]
-                    ], ephemeral=True)
+                view = ConfirmView()
+                await interaction.response.send_message('Do you want to reset the role?', view=view, ephemeral=True)
 
                 def check(button_interaction: Interaction):
-                    return button_interaction.message.id == msg.id and button_interaction.user.id == interaction.user.id
+                    return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
 
                 try:
                     button_interaction = await client.wait_for("interaction", check=check, timeout=60)
                 except asyncio.TimeoutError:
-                    await msg.edit(components=[])
+                    await interaction.response.send_message("Timed out.", ephemeral=True)
                     return
 
-                if button_interaction.data.id == "reset_yes":
+                if view.value is None:
+                    await button_interaction.response.send_message("Timed out.", ephemeral=True)
+                elif view.value is True:
                     # Reset the role
                     cursor.execute("UPDATE guild_roles SET auto_role = NULL WHERE guild_id = %s", (guild_id,))
                     db_connection.commit()
                     await button_interaction.response.send_message("The autorole has been reset.", ephemeral=True)
-                elif button_interaction.data.id == "reset_no":
+                elif view.value is False:
                     await button_interaction.response.send_message("The autorole has not been reset.", ephemeral=True)
             else:
                 # Role not set, set it
@@ -136,6 +148,7 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
+
 @client.tree.command()
 @app_commands.describe(
     role='The role to set as the support role.'
@@ -150,30 +163,27 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
             result = cursor.fetchone()
 
             if result:
-                # Role already set, ask for reset
-                msg = await interaction.response.send_message("The support role has already been set. Do you want to reset it?", components=[
-                    [
-                        Button(ButtonStyle.success, label="Yes", custom_id="reset_yes"),
-                        Button(ButtonStyle.danger, label="No", custom_id="reset_no")
-                     ]
-                ], ephemeral=True)
+                view = ConfirmView()
+                await interaction.response.send_message('Do you want to reset the role?', view=view, ephemeral=True)
 
                 def check(button_interaction: Interaction):
-                    return button_interaction.message.id == msg.id and button_interaction.user.id == interaction.user.id
+                    return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
 
                 try:
                     button_interaction = await client.wait_for("interaction", check=check, timeout=60)
                 except asyncio.TimeoutError:
-                    await msg.edit(components=[])
+                    await interaction.response.send_message("Timed out.", ephemeral=True)
                     return
 
-                if button_interaction.data.id == "reset_yes":
+                if view.value is None:
+                    await button_interaction.response.send_message("Timed out.", ephemeral=True)
+                elif view.value is True:
                     # Reset the role
                     cursor.execute("UPDATE guild_roles SET support_role = NULL WHERE guild_id = %s", (guild_id,))
                     db_connection.commit()
-                    await button_interaction.response.send_message("The support role has been reset.", ephemeral=True)
-                elif button_interaction.data.id == "reset_no":
-                    await button_interaction.response.send_message("The support role has not been reset.", ephemeral=True)
+                    await button_interaction.response.send_message("The support has been reset.", ephemeral=True)
+                elif view.value is False:
+                    await button_interaction.response.send_message("The support has not been reset.", ephemeral=True)
             else:
                 # Role not set, set it
                 cursor.execute("INSERT INTO guild_roles (guild_id, support_role) VALUES (%s, %s)", (guild_id, role.id))
@@ -201,31 +211,27 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
             result = cursor.fetchone()
 
             if result:
-                # Role already set, ask for reset
-                msg = await interaction.response.send_message(
-                    "The worker role has already been set. Do you want to reset it?", components=[
-                        [
-                            Button(ButtonStyle.success, label="Yes", custom_id="reset_yes"),
-                            Button(ButtonStyle.danger, label="No", custom_id="reset_no")
-                        ]
-                    ], ephemeral=True)
+                view = ConfirmView()
+                await interaction.response.send_message('Do you want to reset the role?', view=view, ephemeral=True)
 
                 def check(button_interaction: Interaction):
-                    return button_interaction.message.id == msg.id and button_interaction.user.id == interaction.user.id
+                    return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
 
                 try:
                     button_interaction = await client.wait_for("interaction", check=check, timeout=60)
                 except asyncio.TimeoutError:
-                    await msg.edit(components=[])
+                    await interaction.response.send_message("Timed out.", ephemeral=True)
                     return
 
-                if button_interaction.data.id == "reset_yes":
+                if view.value is None:
+                    await button_interaction.response.send_message("Timed out.", ephemeral=True)
+                elif view.value is True:
                     # Reset the role
                     cursor.execute("UPDATE guild_roles SET worker_role = NULL WHERE guild_id = %s", (guild_id,))
                     db_connection.commit()
-                    await button_interaction.response.send_message("The worker role has been reset.", ephemeral=True)
-                elif button_interaction.data.id == "reset_no":
-                    await button_interaction.response.send_message("The worker role has not been reset.", ephemeral=True)
+                    await button_interaction.response.send_message("The workerrole has been reset.", ephemeral=True)
+                elif view.value is False:
+                    await button_interaction.response.send_message("The workerrole has not been reset.", ephemeral=True)
             else:
                 # Role not set, set it
                 cursor.execute("INSERT INTO guild_roles (guild_id, worker_role) VALUES (%s, %s)",
