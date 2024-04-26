@@ -1,8 +1,7 @@
 from typing import Optional, List
-from discord import Embed, ui, ButtonStyle, Button, Interaction
-import discord
+from nextcord import Embed, ui, ButtonStyle, Button, Interaction
 import asyncio
-from discord import app_commands
+from nextcord import app_commands
 import json
 import mysql.connector
 import nextcord
@@ -25,8 +24,8 @@ def create_db_connection():
 db_connection = create_db_connection()
 
 
-class MyClient(discord.Client):
-    def __init__(self, *, intents: discord.Intents):
+class MyClient(nextcord.Client):
+    def __init__(self, *, intents: nextcord.Intents):
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
 
@@ -54,7 +53,7 @@ class ConfirmView(View):
         self.stop()
 
 
-intents = discord.Intents.default()
+intents = nextcord.Intents.default()
 client = MyClient(intents=intents)
 
 
@@ -63,7 +62,7 @@ async def on_ready():
     print('------')
     print(f"Tjaards bot genaamd: {client.user} (ID: {client.user.id})")
     print('------')
-    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="Tjaard's yapping"))
+    await client.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="Tjaard's yapping"))
 
 
 @client.event
@@ -81,12 +80,12 @@ async def on_guild_join(guild):
 
 
 @client.tree.command()
-async def help(interaction: discord.Interaction):
+async def help(interaction: nextcord.Interaction):
     """Shows the help command."""
-    embed = discord.Embed(
+    embed = nextcord.Embed(
         title="Help",
         description="This is a list of all the commands.",
-        color=discord.Color.blue()
+        color=nextcord.Color.blue()
     )
     for command in client.tree.commands:
         embed.add_field(
@@ -101,7 +100,7 @@ async def help(interaction: discord.Interaction):
 @app_commands.describe(
     autorole='The role to set as the autorole.'
 )
-async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
+async def setautorole(interaction: nextcord.Interaction, autorole: nextcord.Role):
     """Sets or resets the autorole."""
     guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
@@ -153,7 +152,7 @@ async def setautorole(interaction: discord.Interaction, autorole: discord.Role):
 @app_commands.describe(
     role='The role to set as the support role.'
 )
-async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
+async def setsupportrole(interaction: nextcord.Interaction, role: nextcord.Role):
     """Sets or resets the support role."""
     guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
@@ -201,7 +200,7 @@ async def setsupportrole(interaction: discord.Interaction, role: discord.Role):
 @app_commands.describe(
     role='The role to set as the worker role.'
 )
-async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
+async def setworkerrole(interaction: nextcord.Interaction, role: nextcord.Role):
     """Sets or resets the worker role."""
     guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
@@ -253,7 +252,7 @@ async def setworkerrole(interaction: discord.Interaction, role: discord.Role):
 @app_commands.describe(
     person='The person to hire.',
 )
-async def hire(interaction: discord.Interaction, person: discord.Member):
+async def hire(interaction: nextcord.Interaction, person: nextcord.Member):
     """Hires a person for a role."""
     guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
@@ -266,7 +265,7 @@ async def hire(interaction: discord.Interaction, person: discord.Member):
                 await interaction.response.send_message("The worker role has not been set.", ephemeral=True)
                 return
             else:
-                Worker_role = discord.utils.get(interaction.guild.roles, name=config['worker_role'])
+                Worker_role = nextcord.utils.get(interaction.guild.roles, name=config['worker_role'])
                 if Worker_role in person.roles:
                     await interaction.response.send_message(f"{person.mention} is already a {Worker_role.name}.", ephemeral=True)
                     return
@@ -290,7 +289,7 @@ async def hire(interaction: discord.Interaction, person: discord.Member):
 @app_commands.describe(
     person='The person to fire.'
 )
-async def fire(interaction: discord.Interaction, person: discord.Member):
+async def fire(interaction: nextcord.Interaction, person: nextcord.Member):
     """Fires a person from a role."""
     if interaction.user.guild_permissions.administrator:
         try:
@@ -329,7 +328,7 @@ async def fire(interaction: discord.Interaction, person: discord.Member):
 @app_commands.describe(
     person='The person to promote.'
 )
-async def promote(interaction: discord.Interaction, person: discord.Member):
+async def promote(interaction: nextcord.Interaction, person: nextcord.Member):
     """Promotes a person to a higher role."""
     if interaction.user.guild_permissions.administrator:
         try:
@@ -397,7 +396,7 @@ async def on_member_join(member):
 @app_commands.describe(
     number='The number of messages to delete.'
 )
-async def purge(interaction: discord.Interaction, number: str):
+async def purge(interaction: nextcord.Interaction, number: str):
     """Deletes a number of messages from the channel."""
     if interaction.user.guild_permissions.manage_messages:
         # Delete the messages
@@ -416,25 +415,25 @@ async def purge(interaction: discord.Interaction, number: str):
 @app_commands.describe(
     message="The message to send"
 )
-async def say(interaction: discord.Interaction, message: str):
+async def say(interaction: nextcord.Interaction, message: str):
     """Sends a message to the channel."""
     await interaction.channel.send(message)
     await interaction.response.send_message("Message sent!", ephemeral=True)
 
 
 @client.tree.command()
-async def status(interaction: discord.Interaction):
+async def status(interaction: nextcord.Interaction):
     """Shows the status of the bot."""
-    embed = discord.Embed(
+    embed = nextcord.Embed(
         title="Bot Status",
         description="The bot is online and ready to use.",
-        color=discord.Color.green()
+        color=nextcord.Color.green()
     )
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 @client.tree.command()
-async def uitbetalingaanvraag(interaction: discord.Interaction):
+async def uitbetalingaanvraag(interaction: nextcord.Interaction):
     """Makes a uitbetaling request"""
     user_id = interaction.guild.owner_id
     user = await client.fetch_user(user_id)
