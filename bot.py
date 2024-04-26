@@ -2,9 +2,9 @@ from typing import Optional, List
 from nextcord import Embed, ui, ButtonStyle, Interaction
 import asyncio
 import json
-from nextcord.ext import commands
 import mysql.connector
 import nextcord
+from nextcord.ext import commands
 from nextcord.ui import Button, View
 
 with open('config.json') as f:
@@ -32,7 +32,7 @@ class Tree:
         pass  # Implement this method
 
 
-class MyClient(commands.client):
+class MyClient(nextcord.Client):
     def __init__(self, *, intents: nextcord.Intents):
         super().__init__(intents=intents)
         self.tree = Tree()  # Initialize 'tree' with an instance of 'Tree'
@@ -44,6 +44,7 @@ class MyClient(commands.client):
         for guild in self.guilds:
             self.tree.copy_global_to(guild=guild)
             await self.tree.sync(guild=guild)
+
 
 class ConfirmView(View):
     def __init__(self):
@@ -63,6 +64,7 @@ class ConfirmView(View):
 
 intents = nextcord.Intents.default()
 client = MyClient(intents=intents)
+
 
 @client.event
 async def on_ready():
@@ -104,11 +106,13 @@ async def help(ctx: commands.Context):
 
 
 @commands.command()
-@commands.describe(autorole='The role to set as the autorole.')
-async def setautorole(interaction: nextcord.Interaction, autorole: nextcord.Role):
+@commands.describe(    
+    autorole='The role to set as the autorole.'
+)
+async def setautorole(ctx: commands.Context, autorole: nextcord.Role):
     """Sets or resets the autorole."""
-    guild_id = str(interaction.guild.id)
-    if interaction.user.guild_permissions.administrator:
+    guild_id = str(ctx.guild.id)
+    if ctx.author.guild_permissions.administrator:
         try:
             cursor = db_connection.cursor(dictionary=True)
             cursor.execute("SELECT auto_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
@@ -116,41 +120,39 @@ async def setautorole(interaction: nextcord.Interaction, autorole: nextcord.Role
 
             if result:
                 view = ConfirmView()
-                await interaction.response.send_message('Do you want to reset the role?', view=view, ephemeral=True)
+                await ctx.send('Do you want to reset the role?', view=view)
 
                 def check(button_interaction: Interaction):
-                    return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
+                    return button_interaction.user.id == ctx.author.id and button_interaction.message.id == ctx.message.id
 
                 try:
                     button_interaction = await client.wait_for("interaction", check=check, timeout=60)
                 except asyncio.TimeoutError:
-                    await interaction.response.send_message("Timed out.", ephemeral=True)
+                    await ctx.send("Timed out.")
                     return
 
                 if view.value is None:
-                    await button_interaction.response.send_message("Timed out.", ephemeral=True)
+                    await button_interaction.response.send_message("Timed out.")
                 elif view.value is True:
                     # Reset the role
                     cursor.execute("UPDATE guild_roles SET auto_role = NULL WHERE guild_id = %s", (guild_id,))
                     db_connection.commit()
-                    await button_interaction.response.send_message("The autorole has been reset.", ephemeral=True)
+                    await button_interaction.response.send_message("The autorole has been reset.")
                 elif view.value is False:
-                    await button_interaction.response.send_message("The autorole has not been reset.", ephemeral=True)
+                    await button_interaction.response.send_message("The autorole has not been reset.")
             else:
                 # Role not set, set it
                 cursor.execute("INSERT INTO guild_roles (guild_id, auto_role) VALUES (%s, %s)",
                                (guild_id, autorole.id))
                 db_connection.commit()
-                await interaction.response.send_message(f"The autorole has been set to {autorole.mention}.",
-                                                        ephemeral=True)
+                await ctx.send(f"The autorole has been set to {autorole.mention}.")
         except mysql.connector.Error as err:
             print(f"Error: {err}")
-            await interaction.response.send_message("An error occurred while setting the autorole. Contact the developer!", ephemeral=True)
+            await ctx.send("An error occurred while setting the autorole. Contact the developer!")
         finally:
             cursor.close()
     else:
-        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
-
+        await ctx.send("You don't have permission to use this command.")
 
 
 @client.command()
