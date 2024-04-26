@@ -31,18 +31,19 @@ class Tree:
     def sync(self, guild):
         pass  # Implement this method
 
-class MyClient(nextcord.Client):
+
+class Mybot(nextcord.bot):
     def __init__(self, *, intents: nextcord.Intents):
         super().__init__(intents=intents)
-        self = Tree()  # Initialize 'tree' with an instance of 'Tree'
+        self.tree = Tree()  # Initialize 'tree' with an instance of 'Tree'
 
     async def on_ready(self):
         self.loop.create_task(self.setup_hook())
 
     async def setup_hook(self):
         for guild in self.guilds:
-            self.copy_global_to(guild=guild)
-            await self.sync(guild=guild)
+            self.tree.copy_global_to(guild=guild)
+            await self.tree.sync(guild=guild)
 
 class ConfirmView(View):
     def __init__(self):
@@ -61,21 +62,21 @@ class ConfirmView(View):
 
 
 intents = nextcord.Intents.default()
-client = MyClient(intents=intents)
+bot = commands.Bot(command_prefix='/', intents=intents)
 
 
-@client.event
+@bot.event
 async def on_ready():
     print('------')
-    print(f"Tjaards bot genaamd: {client.user} (ID: {client.user.id})")
+    print(f"Tjaards bot genaamd: {bot.user} (ID: {bot.user.id})")
     print('------')
-    await client.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="Tjaard's yapping"))
+    await bot.change_presence(activity=nextcord.Activity(type=nextcord.ActivityType.listening, name="Tjaard's yapping"))
 
 
-@client.event
+@bot.event
 async def on_guild_join(guild):
     user_id = guild.owner_id
-    user = await client.fetch_user(user_id)
+    user = await bot.fetch_user(user_id)
     cursor = db_connection.cursor(dictionary=True)
     cursor.execute("INSERT INTO guild_roles (guild_id) VALUES (%s)", (guild.id,))
     if guild.me.guild_permissions.administrator:
@@ -86,24 +87,24 @@ async def on_guild_join(guild):
             f"Ik ben de Loods Bot gemaakt door Tjaard! Ik ben een bot die je kan helpen met zaken zoals het aannemen van personen en het ontslaan ervan. Bekijk alle commando's met /help. P.S. al heb je vragen of suggesties stuur ze gerust naar Tjaard **Zou u nog even mij een rol kunnen geven met administrator permissies of mij dit apart kunnen geven?**")
 
 
-@client.command()
-async def help(interaction: nextcord.Interaction):
+@bot.command()
+async def help(ctx: commands.Context):
     """Shows the help command."""
     embed = nextcord.Embed(
         title="Help",
         description="This is a list of all the commands.",
         color=nextcord.Color.blue()
     )
-    for command in client.commands:
+    for command in bot.commands:
         embed.add_field(
             name=command.name,
             value=command.description,
             inline=False
         )
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await ctx.send(embed=embed)
 
 
-@client.command()
+@bot.command()
 @nextcord.ext.commands.describe(    
     autorole='The role to set as the autorole.'
 )
@@ -124,7 +125,7 @@ async def setautorole(interaction: nextcord.Interaction, autorole: nextcord.Role
                     return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
 
                 try:
-                    button_interaction = await client.wait_for("interaction", check=check, timeout=60)
+                    button_interaction = await bot.wait_for("interaction", check=check, timeout=60)
                 except asyncio.TimeoutError:
                     await interaction.response.send_message("Timed out.", ephemeral=True)
                     return
@@ -155,7 +156,7 @@ async def setautorole(interaction: nextcord.Interaction, autorole: nextcord.Role
 
 
 
-@client.command()
+@bot.command()
 @nextcord.ext.commands.describe(    
     role='The role to set as the support role.'
 )
@@ -176,7 +177,7 @@ async def setsupportrole(interaction: nextcord.Interaction, role: nextcord.Role)
                     return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
 
                 try:
-                    button_interaction = await client.wait_for("interaction", check=check, timeout=60)
+                    button_interaction = await bot.wait_for("interaction", check=check, timeout=60)
                 except asyncio.TimeoutError:
                     await interaction.response.send_message("Timed out.", ephemeral=True)
                     return
@@ -203,7 +204,7 @@ async def setsupportrole(interaction: nextcord.Interaction, role: nextcord.Role)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
-@client.command()
+@bot.command()
 @nextcord.ext.commands.describe(    
     role='The role to set as the worker role.'
 )
@@ -224,7 +225,7 @@ async def setworkerrole(interaction: nextcord.Interaction, role: nextcord.Role):
                     return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
 
                 try:
-                    button_interaction = await client.wait_for("interaction", check=check, timeout=60)
+                    button_interaction = await bot.wait_for("interaction", check=check, timeout=60)
                 except asyncio.TimeoutError:
                     await interaction.response.send_message("Timed out.", ephemeral=True)
                     return
@@ -255,7 +256,7 @@ async def setworkerrole(interaction: nextcord.Interaction, role: nextcord.Role):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.command()
+@bot.command()
 @nextcord.ext.commands.describe(   
     person='The person to hire.',
 )
@@ -292,7 +293,7 @@ async def hire(interaction: nextcord.Interaction, person: nextcord.Member):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.command()
+@bot.command()
 @nextcord.ext.commands.describe(    
     person='The person to fire.'
 )
@@ -331,7 +332,7 @@ async def fire(interaction: nextcord.Interaction, person: nextcord.Member):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.command()
+@bot.command()
 @nextcord.ext.commands.describe(    
     person='The person to promote.'
 )
@@ -374,7 +375,7 @@ async def promote(interaction: nextcord.Interaction, person: nextcord.Member):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.event
+@bot.event
 async def on_member_join(member):
     """Gives a role to a member when they join."""
     try:
@@ -399,7 +400,7 @@ async def on_member_join(member):
         cursor.close()
 
 
-@client.command()
+@bot.command()
 @nextcord.ext.commands.describe(    number='The number of messages to delete.'
 )
 async def purge(interaction: nextcord.Interaction, number: str):
@@ -417,7 +418,7 @@ async def purge(interaction: nextcord.Interaction, number: str):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.command()
+@bot.command()
 @nextcord.ext.commands.describe(    message="The message to send"
 )
 async def say(interaction: nextcord.Interaction, message: str):
@@ -426,7 +427,7 @@ async def say(interaction: nextcord.Interaction, message: str):
     await interaction.response.send_message("Message sent!", ephemeral=True)
 
 
-@client.command()
+@bot.command()
 async def status(interaction: nextcord.Interaction):
     """Shows the status of the bot."""
     embed = nextcord.Embed(
@@ -437,13 +438,13 @@ async def status(interaction: nextcord.Interaction):
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-@client.command()
+@bot.command()
 async def uitbetalingaanvraag(interaction: nextcord.Interaction):
     """Makes a uitbetaling request"""
     user_id = interaction.guild.owner_id
-    user = await client.fetch_user(user_id)
+    user = await bot.fetch_user(user_id)
     await user.send(f"{interaction.user.mention} heeft om een uitbetaling gevraagd")
     await interaction.response.send_message("Uitbetaling aanvraag is verzonden!", ephemeral=True)
 
 
-client.run(config['token'])
+bot.run(config['token'])
