@@ -105,12 +105,8 @@ async def help(ctx: commands.Context):
     await ctx.send(embed=embed)
 
 
-@commands.command()
-@commands.describe(    
-    autorole='The role to set as the autorole.'
-)
+@client.command(help="Sets or resets the autorole.")
 async def setautorole(ctx: commands.Context, autorole: nextcord.Role):
-    """Sets or resets the autorole."""
     guild_id = str(ctx.guild.id)
     if ctx.author.guild_permissions.administrator:
         try:
@@ -155,12 +151,8 @@ async def setautorole(ctx: commands.Context, autorole: nextcord.Role):
         await ctx.send("You don't have permission to use this command.")
 
 
-@client.command()
-@nextcord.ext.commands.describe(    
-    role='The role to set as the support role.'
-)
+@client.command(help="Sets or resets the supportrole.")
 async def setsupportrole(interaction: nextcord.Interaction, role: nextcord.Role):
-    """Sets or resets the support role."""
     guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
         try:
@@ -203,12 +195,8 @@ async def setsupportrole(interaction: nextcord.Interaction, role: nextcord.Role)
     else:
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
-@client.command()
-@nextcord.ext.commands.describe(    
-    role='The role to set as the worker role.'
-)
+@client.command(help="Sets or resets the workerrole.")
 async def setworkerrole(interaction: nextcord.Interaction, role: nextcord.Role):
-    """Sets or resets the worker role."""
     guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
         try:
@@ -255,12 +243,8 @@ async def setworkerrole(interaction: nextcord.Interaction, role: nextcord.Role):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.command()
-@nextcord.ext.commands.describe(   
-    person='The person to hire.',
-)
+@client.command(help="Hires a person for a role.")
 async def hire(interaction: nextcord.Interaction, person: nextcord.Member):
-    """Hires a person for a role."""
     guild_id = str(interaction.guild.id)
     if interaction.user.guild_permissions.administrator:
         try:
@@ -292,12 +276,8 @@ async def hire(interaction: nextcord.Interaction, person: nextcord.Member):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.command()
-@nextcord.ext.commands.describe(    
-    person='The person to fire.'
-)
+@client.command(help="Fires a person from a role.")
 async def fire(interaction: nextcord.Interaction, person: nextcord.Member):
-    """Fires a person from a role."""
     if interaction.user.guild_permissions.administrator:
         try:
             guild_id = str(interaction.guild.id)
@@ -331,12 +311,8 @@ async def fire(interaction: nextcord.Interaction, person: nextcord.Member):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.command()
-@nextcord.ext.commands.describe(    
-    person='The person to promote.'
-)
+@client.command(help="Sets or resets the autorole.")
 async def promote(interaction: nextcord.Interaction, person: nextcord.Member):
-    """Promotes a person to a higher role."""
     if interaction.user.guild_permissions.administrator:
         try:
             guild_id = str(interaction.guild.id)
@@ -374,9 +350,8 @@ async def promote(interaction: nextcord.Interaction, person: nextcord.Member):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.event
+@client.command(help="Sets or resets the autorole.")
 async def on_member_join(member):
-    """Gives a role to a member when they join."""
     try:
         guild_id = str(member.guild.id)
         cursor = db_connection.cursor(dictionary=True)
@@ -399,9 +374,7 @@ async def on_member_join(member):
         cursor.close()
 
 
-@client.command()
-@nextcord.ext.commands.describe(    number='The number of messages to delete.'
-)
+@client.command(help="Deletes a number of messages from the channel.")
 async def purge(interaction: nextcord.Interaction, number: str):
     """Deletes a number of messages from the channel."""
     if interaction.user.guild_permissions.manage_messages:
@@ -417,18 +390,15 @@ async def purge(interaction: nextcord.Interaction, number: str):
         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
-@client.command()
-@nextcord.ext.commands.describe(    message="The message to send"
-)
+@client.command(help="Sends a message to the channel.")
 async def say(interaction: nextcord.Interaction, message: str):
     """Sends a message to the channel."""
     await interaction.channel.send(message)
     await interaction.response.send_message("Message sent!", ephemeral=True)
 
 
-@client.command()
+@client.command(help="Shows the status of the bot.")
 async def status(interaction: nextcord.Interaction):
-    """Shows the status of the bot."""
     embed = nextcord.Embed(
         title="Bot Status",
         description="The bot is online and ready to use.",
@@ -437,9 +407,8 @@ async def status(interaction: nextcord.Interaction):
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-@client.command()
+@client.command(help="Makes a uitbetaling request")
 async def uitbetalingaanvraag(interaction: nextcord.Interaction):
-    """Makes a uitbetaling request"""
     user_id = interaction.guild.owner_id
     user = await client.fetch_user(user_id)
     await user.send(f"{interaction.user.mention} heeft om een uitbetaling gevraagd")
