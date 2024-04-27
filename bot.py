@@ -150,96 +150,96 @@ async def setautorole(ctx: commands.Context, autorole: nextcord.Role):
         await ctx.send("You don't have permission to use this command.")
 
 
-@client.command(help="Sets or resets the supportrole.")
-async def setsupportrole(interaction: nextcord.Interaction, role: nextcord.Role):
-    guild_id = str(interaction.guild.id)
-    if interaction.user.guild_permissions.administrator:
-        try:
-            cursor = db_connection.cursor(dictionary=True)
-            cursor.execute("SELECT support_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
-            result = cursor.fetchone()
+# @client.command(help="Sets or resets the supportrole.")
+# async def setsupportrole(interaction: nextcord.Interaction, role: nextcord.Role):
+#     guild_id = str(interaction.guild.id)
+#     if interaction.user.guild_permissions.administrator:
+#         try:
+#             cursor = db_connection.cursor(dictionary=True)
+#             cursor.execute("SELECT support_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
+#             result = cursor.fetchone()
 
-            if result:
-                view = ConfirmView()
-                await interaction.response.send_message('Do you want to reset the role?', view=view, ephemeral=True)
+#             if result:
+#                 view = ConfirmView()
+#                 await interaction.response.send_message('Do you want to reset the role?', view=view, ephemeral=True)
 
-                def check(button_interaction: Interaction):
-                    return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
+#                 def check(button_interaction: Interaction):
+#                     return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
 
-                try:
-                    button_interaction = await client.wait_for("interaction", check=check, timeout=60)
-                except asyncio.TimeoutError:
-                    await interaction.response.send_message("Timed out.", ephemeral=True)
-                    return
+#                 try:
+#                     button_interaction = await client.wait_for("interaction", check=check, timeout=60)
+#                 except asyncio.TimeoutError:
+#                     await interaction.response.send_message("Timed out.", ephemeral=True)
+#                     return
 
-                if view.value is None:
-                    await button_interaction.response.send_message("Timed out.", ephemeral=True)
-                elif view.value is True:
-                    # Reset the role
-                    cursor.execute("UPDATE guild_roles SET support_role = NULL WHERE guild_id = %s", (guild_id,))
-                    db_connection.commit()
-                    await button_interaction.response.send_message("The support has been reset.", ephemeral=True)
-                elif view.value is False:
-                    await button_interaction.response.send_message("The support has not been reset.", ephemeral=True)
-            else:
-                # Role not set, set it
-                cursor.execute("INSERT INTO guild_roles (guild_id, support_role) VALUES (%s, %s)", (guild_id, role.id))
-                db_connection.commit()
-                await interaction.response.send_message(f"The support role has been set to {role.mention}.", ephemeral=True)
-        except mysql.connector.Error as err:
-            print(f"Error: {err}")
-            await interaction.response.send_message("An error occurred while setting the support role. Contact the developer!", ephemeral=True)
-        finally:
-            cursor.close()
-    else:
-        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+#                 if view.value is None:
+#                     await button_interaction.response.send_message("Timed out.", ephemeral=True)
+#                 elif view.value is True:
+#                     # Reset the role
+#                     cursor.execute("UPDATE guild_roles SET support_role = NULL WHERE guild_id = %s", (guild_id,))
+#                     db_connection.commit()
+#                     await button_interaction.response.send_message("The support has been reset.", ephemeral=True)
+#                 elif view.value is False:
+#                     await button_interaction.response.send_message("The support has not been reset.", ephemeral=True)
+#             else:
+#                 # Role not set, set it
+#                 cursor.execute("INSERT INTO guild_roles (guild_id, support_role) VALUES (%s, %s)", (guild_id, role.id))
+#                 db_connection.commit()
+#                 await interaction.response.send_message(f"The support role has been set to {role.mention}.", ephemeral=True)
+#         except mysql.connector.Error as err:
+#             print(f"Error: {err}")
+#             await interaction.response.send_message("An error occurred while setting the support role. Contact the developer!", ephemeral=True)
+#         finally:
+#             cursor.close()
+#     else:
+#         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
-@client.command(help="Sets or resets the workerrole.")
-async def setworkerrole(interaction: nextcord.Interaction, role: nextcord.Role):
-    guild_id = str(interaction.guild.id)
-    if interaction.user.guild_permissions.administrator:
-        try:
-            cursor = db_connection.cursor(dictionary=True)
-            cursor.execute("SELECT worker_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
-            result = cursor.fetchone()
+# @client.command(help="Sets or resets the workerrole.")
+# async def setworkerrole(interaction: nextcord.Interaction, role: nextcord.Role):
+#     guild_id = str(interaction.guild.id)
+#     if interaction.user.guild_permissions.administrator:
+#         try:
+#             cursor = db_connection.cursor(dictionary=True)
+#             cursor.execute("SELECT worker_role FROM guild_roles WHERE guild_id = %s", (guild_id,))
+#             result = cursor.fetchone()
 
-            if result:
-                view = ConfirmView()
-                await interaction.response.send_message('Do you want to reset the role?', view=view, ephemeral=True)
+#             if result:
+#                 view = ConfirmView()
+#                 await interaction.response.send_message('Do you want to reset the role?', view=view, ephemeral=True)
 
-                def check(button_interaction: Interaction):
-                    return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
+#                 def check(button_interaction: Interaction):
+#                     return button_interaction.user.id == interaction.user.id and button_interaction.message.id == interaction.message.id
 
-                try:
-                    button_interaction = await client.wait_for("interaction", check=check, timeout=60)
-                except asyncio.TimeoutError:
-                    await interaction.response.send_message("Timed out.", ephemeral=True)
-                    return
+#                 try:
+#                     button_interaction = await client.wait_for("interaction", check=check, timeout=60)
+#                 except asyncio.TimeoutError:
+#                     await interaction.response.send_message("Timed out.", ephemeral=True)
+#                     return
 
-                if view.value is None:
-                    await button_interaction.response.send_message("Timed out.", ephemeral=True)
-                elif view.value is True:
-                    # Reset the role
-                    cursor.execute("UPDATE guild_roles SET worker_role = NULL WHERE guild_id = %s", (guild_id,))
-                    db_connection.commit()
-                    await button_interaction.response.send_message("The workerrole has been reset.", ephemeral=True)
-                elif view.value is False:
-                    await button_interaction.response.send_message("The workerrole has not been reset.", ephemeral=True)
-            else:
-                # Role not set, set it
-                cursor.execute("INSERT INTO guild_roles (guild_id, worker_role) VALUES (%s, %s)",
-                               (guild_id, role.id))
-                db_connection.commit()
-                await interaction.response.send_message(f"The worker role has been set to {role.mention}.",
-                                                        ephemeral=True)
-        except mysql.connector.Error as err:
-            print(f"Error: {err}")
-            await interaction.response.send_message("An error occurred while setting the worker role.", ephemeral=True)
-        finally:
-            if cursor:
-                cursor.close()  # Close cursor only if it exists
-    else:
-        await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+#                 if view.value is None:
+#                     await button_interaction.response.send_message("Timed out.", ephemeral=True)
+#                 elif view.value is True:
+#                     # Reset the role
+#                     cursor.execute("UPDATE guild_roles SET worker_role = NULL WHERE guild_id = %s", (guild_id,))
+#                     db_connection.commit()
+#                     await button_interaction.response.send_message("The workerrole has been reset.", ephemeral=True)
+#                 elif view.value is False:
+#                     await button_interaction.response.send_message("The workerrole has not been reset.", ephemeral=True)
+#             else:
+#                 # Role not set, set it
+#                 cursor.execute("INSERT INTO guild_roles (guild_id, worker_role) VALUES (%s, %s)",
+#                                (guild_id, role.id))
+#                 db_connection.commit()
+#                 await interaction.response.send_message(f"The worker role has been set to {role.mention}.",
+#                                                         ephemeral=True)
+#         except mysql.connector.Error as err:
+#             print(f"Error: {err}")
+#             await interaction.response.send_message("An error occurred while setting the worker role.", ephemeral=True)
+#         finally:
+#             if cursor:
+#                 cursor.close()  # Close cursor only if it exists
+#     else:
+#         await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
 
 
 @client.command(help="Hires a person for a role.")
